@@ -23,6 +23,13 @@ CSV_ENCODING = "latin-1"
 TARGET = "late_delivery_risk"
 RANDOM_SEED = 42
 TEST_SIZE = 0.2
+LOGREG_MAX_ITER = 1000
+XGB_PARAMS = {
+    "n_estimators": 300,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "eval_metric": "logloss",
+}
 
 # Model inputs, all known when the order is placed.
 CATEGORICAL_FEATURES = [
