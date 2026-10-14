@@ -24,6 +24,26 @@ TARGET = "late_delivery_risk"
 RANDOM_SEED = 42
 TEST_SIZE = 0.2
 
+# Model inputs, all known when the order is placed.
+CATEGORICAL_FEATURES = [
+    "shipping_mode",
+    "payment_type",
+    "market",
+    "order_region",
+    "customer_segment",
+    "main_category",
+]
+NUMERIC_FEATURES = [
+    "days_for_shipment_scheduled",
+    "n_items",
+    "total_quantity",
+    "total_sales",
+    "avg_discount_rate",
+    "order_month",
+    "order_weekday",
+    "order_hour",
+]
+
 # Columns known only after delivery (target leakage). Names are after cleaning.
 LEAKAGE_COLUMNS = [
     "days_for_shipping_real",
