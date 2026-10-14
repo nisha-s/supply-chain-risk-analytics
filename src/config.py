@@ -74,3 +74,4 @@ PII_COLUMNS = [
 
 # Dashboard
 TOP_RISK_ORDERS = 50
+BAR_COLOR = "#2a78d6"
