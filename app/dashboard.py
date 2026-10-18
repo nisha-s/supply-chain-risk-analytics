@@ -62,6 +62,7 @@ def late_rate_bar(df: pd.DataFrame, label_column: str, title: str):
         xaxis_tickformat=".0%",
         yaxis_title=None,
         yaxis_dtick=1,  # show every category label
+        yaxis_automargin=True,  # widen the left margin so long labels are not cut off
         barcornerradius=4,
         height=140 + 32 * len(df),
         margin={"r": 60},
@@ -86,7 +87,10 @@ def show_breakdowns() -> None:
     """Show late rate by shipping mode, region and product category."""
     st.plotly_chart(late_rate_bar(load_query("mode"), "shipping_mode", "Late rate by shipping mode"))
     st.plotly_chart(late_rate_bar(load_query("region"), "order_region", "Late rate by order region"))
-    st.plotly_chart(late_rate_bar(load_query("category"), "category_name", "Late rate by product category"))
+    category = load_query("category")
+    # Some category names exist in two departments (e.g. Electronics), so label both.
+    category["category"] = category["category_name"] + " (" + category["department_name"] + ")"
+    st.plotly_chart(late_rate_bar(category, "category", "Late rate by product category"))
 
 
 def show_top_risk_orders() -> None:
