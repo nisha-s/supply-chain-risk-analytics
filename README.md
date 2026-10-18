@@ -55,7 +55,7 @@ tests/test_data.py   data-quality tests on a small sample CSV
 
 ## How to run
 
-Requires Python 3.13.
+Requires Python 3.12 or newer.
 
 ```bash
 python -m venv .venv
@@ -74,13 +74,93 @@ python -m pytest -v                # run tests
 
 Run commands from the repo root with `python -m` so imports from `src` work.
 
+On macOS, XGBoost needs the OpenMP runtime: `brew install libomp`.
+
 ## Key findings
 
-_To be filled in from actual results._
+All numbers below come from running the pipeline on the full dataset.
 
-- Overall late rate: _TBD_
-- Shipping mode: _TBD_
-- Region: _TBD_
-- Chi-square tests: _TBD_
-- Logistic regression (strongest drivers): _TBD_
-- Model performance (ROC-AUC, precision, recall, F1): _TBD_
+### Overview
+
+- **65,752 orders** (180,519 order lines), January 2015 to January 2018.
+- **54.82% of orders were late** (36,048 orders); 40.83% were on time or early.
+  The rest were mostly canceled.
+- Average shipping time was **3.50 days actual vs. 2.93 days scheduled**.
+
+### Shipping mode is the main driver
+
+| Shipping mode | Orders | Late rate | Scheduled days | Actual days (avg) |
+|---|---:|---:|---:|---:|
+| First Class | 10,079 | 95.27% | 1 | 2.00 |
+| Second Class | 12,778 | 76.72% | 2 | 4.00 |
+| Same Day | 3,571 | 46.15% | 0 | 0.48 |
+| Standard Class | 39,324 | 38.13% | 4 | 4.00 |
+
+The faster, premium modes promise more than they deliver: First Class is
+scheduled for 1 day but takes 2 on average, so it is almost always late.
+
+![Late rate by shipping mode](docs/images/late_rate_by_shipping_mode.png)
+
+### Statistical tests
+
+| Test (late vs. variable) | χ² | df | p-value | Cramér's V |
+|---|---:|---:|---:|---:|
+| Shipping mode | 13,661.67 | 3 | < 0.001 | 0.456 |
+| Order region | 31.55 | 22 | 0.085 | 0.022 |
+
+Shipping mode has a strong association with late delivery. Region is **not**
+significant at the 5% level, and its effect size is negligible.
+
+Logistic regression on order-time variables (n = 65,752, pseudo R² = 0.179),
+reported as odds ratios vs. Standard Class / Cash payment:
+
+| Variable | Odds ratio | 95% CI | p-value |
+|---|---:|---:|---:|
+| First Class | 33.61 | 30.59 – 36.94 | < 0.0001 |
+| Second Class | 5.43 | 5.18 – 5.68 | < 0.0001 |
+| Same Day | 1.40 | 1.31 – 1.50 | < 0.0001 |
+| Payment: Transfer | 0.65 | 0.61 – 0.69 | < 0.0001 |
+
+Market and customer segment had no significant effect (all p > 0.5).
+
+### Region, category and month
+
+- Late rates by region range only from 49.51% (Canada) to 57.55% (Central Africa).
+- The large product categories all sit between about 54% and 55%. The extremes
+  are small categories, e.g. Golf Bags & Carts at 68.85% from only 61 orders.
+- Monthly late rates stay between 52.45% and 57.28% with no trend.
+
+![Late rate by order region](docs/images/late_rate_by_region.png)
+
+<details>
+<summary>Late rate by product category</summary>
+
+![Late rate by product category](docs/images/late_rate_by_category.png)
+
+</details>
+
+### Predicting late delivery
+
+Features are limited to what is known when the order is placed (no real shipping
+days, delivery status, shipping date or order status). Evaluated on 13,151
+held-out orders (stratified 80/20 split):
+
+| Model | ROC-AUC | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|
+| Logistic regression | 0.7392 | 0.8456 | 0.5635 | 0.6763 |
+| XGBoost | **0.7618** | 0.8166 | 0.6060 | 0.6957 |
+
+- XGBoost confusion matrix: 4,369 late orders caught, 2,841 missed,
+  981 on-time orders wrongly flagged, 4,960 correctly cleared.
+- XGBoost improves ROC-AUC by 0.023 over the baseline. Most of the signal is
+  shipping mode, which a linear model already captures.
+- All 50 highest-risk test orders were First Class, and all 50 were actually late.
+
+Full metrics: [`reports/model_metrics.csv`](reports/model_metrics.csv).
+
+### Takeaway
+
+Late delivery in this data is mostly a promise problem, not a geography or product
+problem. First and Second Class are scheduled faster than they actually ship. Fixing
+their scheduled delivery times (or their actual handling times) would cut late
+deliveries far more than any regional or category-level change.
