@@ -18,17 +18,8 @@ Results are shown in a Streamlit dashboard.
 
 ## Data
 
-This project uses the **DataCo Smart Supply Chain for Big Data Analysis** dataset:
-180,519 order lines across 65,752 orders.
-
-> Constante, F., Silva, F., & Pereira, A. (2019). *DataCo SMART SUPPLY CHAIN FOR BIG
-> DATA ANALYSIS* [Data set]. Mendeley Data.
-> [https://doi.org/10.17632/8gx2fvg2k6](https://doi.org/10.17632/8gx2fvg2k6)
-
-The dataset is licensed under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). All credit for the data
-goes to its authors. I downloaded it from the
-[Kaggle mirror](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis).
+Source: [DataCo Smart Supply Chain for Big Data Analysis](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis)
+on Kaggle. 180,519 order lines across 65,752 orders.
 
 Download `DataCoSupplyChainDataset.csv` and place it in `data/raw/`. The `data/`
 folder is git-ignored, so no data is committed.
